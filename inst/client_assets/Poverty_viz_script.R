@@ -1,15 +1,9 @@
 library(tidyverse)
 
-
-# Reading in data ---------------------------------------------------------
-
-
-
-
+# 1) Poverty Scatterplot
+# 2) Correlation Heatmap 
 
 # 1) Poverty Scatterplot -----------------------------------------------------
-
-
 
 filter(upwork03::averages, Indicator != "Poverty") %>% 
   left_join(filter(averages, Indicator == "Poverty"), by = "year") %>% 
