@@ -1,0 +1,12 @@
+name: upwork03
+title: upwork03
+username:
+account: rseis
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3470864
+bundleId: 4092511
+url: https://rseis.shinyapps.io/upwork03/
+when: 1610571931.63106
+asMultiple: FALSE
+asStatic: FALSE
