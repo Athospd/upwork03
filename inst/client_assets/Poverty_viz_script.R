@@ -3,30 +3,15 @@ library(tidyverse)
 
 # Reading in data ---------------------------------------------------------
 
-sheets <- readxl::excel_sheets("inst/client_assets/WDIEXCEL_v2.xlsx")
-data_list <- map(sheets, ~ readxl::read_excel("inst/client_assets/WDIEXCEL_v2.xlsx", sheet = .))
-names(data_list) <- c("Poverty", "Health_Exp", "Water", "Sanitation", "handwashing", "Tuberculosis", "Malaria", "Infant_Mortality", "HIV")
-N <- map(data_list, nrow) %>% unlist()
 
-data_long_list <- map2(data_list, names(data_list),
-                       ~pivot_longer(.x, cols = 5:9, names_to = "year", values_to = .y))
-
-all_indicators <- purrr::reduce(data_long_list, full_join, by = c("Country Name", "Country Code", "year")) %>% 
-  select(1:2, year, all_of(names(data_list)))
 
 
 
 # 1) Poverty Scatterplot -----------------------------------------------------
 
-averages <- readxl::read_excel("inst/client_assets/WDIEXCEL_averages.xlsx", sheet = 1) %>% 
-  pivot_longer(2:6, names_to = "year", values_to = "average") %>% 
-  rename(Indicator = ...1) %>% 
-  mutate(Indicator = str_remove(Indicator, "Average ")) %>% 
-  mutate(Indicator = case_when(Indicator == "Health Exp" ~ "Health Expenditure",
-                               Indicator == "Water" ~ "Drinking Water",
-                               TRUE ~ Indicator))
 
-filter(averages, Indicator != "Poverty") %>% 
+
+filter(upwork03::averages, Indicator != "Poverty") %>% 
   left_join(filter(averages, Indicator == "Poverty"), by = "year") %>% 
   rename(Indicator = Indicator.x, poverty_rate = average.y) %>% 
   ggplot(aes(average.x, poverty_rate))+
@@ -89,17 +74,7 @@ filter(correlation_2017, Var1 %in% c("Poverty", "Tuberculosis", "Malaria", "HIV"
 
 # 3) Time series trend -------------------------------------------------------
 
-Poverty_average <- data_long_list$Poverty %>% 
-  select(`Country Name`, year, Poverty) %>% 
-  group_by(year) %>% 
-  mutate(Average_poverty = mean(Poverty, na.rm = T)) %>% 
-  ungroup() %>% 
-  mutate(average_compare = case_when(Poverty > Average_poverty ~ "Above Average",
-                                     Poverty < Average_poverty ~ "Below Average"),
-         average_compare = ifelse(`Country Name` == "Average", "Average", average_compare))
-
-
-filter(Poverty_average, year == 2017) %>% 
+filter(upwork03::poverty_average, year == 2017) %>% 
   mutate(Country_Name = reorder(`Country Name`, Poverty)) %>% 
   ggplot(aes(x = Country_Name, y = Poverty, fill = average_compare, alpha = average_compare))+
   geom_col()+
@@ -118,12 +93,7 @@ filter(Poverty_average, year == 2017) %>%
 # 4) Highest Incidence -------------------------------------------------------
 
 
-Highest_Incidence <- data_list$Poverty %>% 
-  slice(-50) %>% 
-  select(1:4) %>% 
-  left_join(all_indicators) %>% 
-  select(1,2, year, Tuberculosis, Malaria, HIV) %>% 
-  pivot_longer(cols = c("Tuberculosis", "Malaria", "HIV"), names_to = "TMH", values_to = "Incidence") %>% 
+highest_incidence_filtered <- upwork03::highest_incidence %>% 
   group_by(TMH) %>% 
   filter(year == 2017) %>% 
   mutate(r = rank(-Incidence, ties.method = "first"), top_10 = r <= 10) %>% 
@@ -170,25 +140,14 @@ Highest_Incidence %>% filter(TMH == "HIV") %>%
 
 # 5) Incidence Growth --------------------------------------------------------
 
-Incidence_Growth <- all_indicators %>% 
-  select(1:3, "Tuberculosis", "Malaria", "HIV") %>% 
-  group_by(year) %>% 
-  summarise(across(3:5, mean, na.rm = T)) %>% 
-  mutate(year = as.numeric(year),
-         Tuberculosis_1 = lag(Tuberculosis, order_by = year),
-         Malaria_1 = lag(Malaria, order_by = year),
-         HIV_1 = lag(HIV, order_by = year)) %>% 
-  mutate(Tuberculosis_gr = (Tuberculosis - Tuberculosis_1)/Tuberculosis_1,
-         Malaria_gr = (Malaria - Malaria_1)/Malaria_1,
-         HIV_gr = (HIV - HIV_1)/HIV_1) %>% 
-  select(year, contains("gr")) %>% 
+incidence_growth_filtered <- upwork03::incidence_growth %>% 
   filter(year > 2013) %>% 
   mutate(across(2:4, ~ round(.*100, 2))) %>% 
   pivot_longer(cols = 2:4, names_to = "Infection", values_to = "Growth_rate") %>% 
   mutate(Infection = str_remove(Infection, "_gr"))
 
 
-ggplot(Incidence_Growth)+
+ggplot(incidence_growth_filtered)+
   geom_bar(aes(x = year, y = Growth_rate, fill = Infection), stat = "identity")+
   geom_text(aes(x = year,y = Growth_rate, label = paste(Growth_rate, "%")),
             vjust = -0.5, size = 3)+
