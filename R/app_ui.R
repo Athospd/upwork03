@@ -2,15 +2,36 @@
 #' 
 #' @param request Internal parameter for `{shiny}`. 
 #'     DO NOT REMOVE.
-#' @import shiny
+#' @import shiny shinymaterial
 #' @noRd
 app_ui <- function(request) {
   tagList(
     # Leave this function for adding external resources
     golem_add_external_resources(),
     # List the first level UI elements here 
-    fluidPage(
-      h1("upwork03")
+    material_page(
+      title = "Basic Page + Side-Nav + Tabs",
+      # Place side-nav in the beginning of the UI
+      material_side_nav(
+        fixed = FALSE,
+        tags$h3("Side-Nav Content")
+      ),
+      # Define tabs
+      material_tabs(
+        tabs = c(
+          "First Tab" = "first_tab",
+          "Second Tab" = "second_tab"
+        )
+      ),
+      # Define tab content
+      material_tab_content(
+        tab_id = "first_tab",
+        tags$h1("First Tab Content")
+      ),
+      material_tab_content(
+        tab_id = "second_tab",
+        tags$h1("Second Tab Content")
+      )
     )
   )
 }
