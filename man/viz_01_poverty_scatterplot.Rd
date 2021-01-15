@@ -4,10 +4,12 @@
 \alias{viz_01_poverty_scatterplot}
 \title{Viz 01 Porverty Scatterplot}
 \usage{
-viz_01_poverty_scatterplot(data)
+viz_01_poverty_scatterplot(data, fontsize = 16)
 }
 \arguments{
 \item{data}{data.frame. Made for use with [upwork03::averages]}
+
+\item{fontsize}{numeric.}
 }
 \description{
 Viz 01 Porverty Scatterplot

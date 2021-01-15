@@ -9,28 +9,35 @@ app_ui <- function(request) {
     # Leave this function for adding external resources
     golem_add_external_resources(),
     # List the first level UI elements here 
-    material_page(
-      title = "Basic Page + Side-Nav + Tabs",
-      # Place side-nav in the beginning of the UI
-      material_side_nav(
-        fixed = FALSE,
-        tags$h3("Side-Nav Content")
-      ),
-      # Define tabs
-      material_tabs(
-        tabs = c(
-          "First Tab" = "first_tab",
-          "Second Tab" = "second_tab"
+    shiny::navbarPage(selected = "Home",
+      shinyWidgets::useShinydashboard(),
+      title = "Poverty Viz",
+      shiny::tabPanel(
+        title = "Home",
+        
+        column(
+          width = 12,
+          shinydashboard::box(
+            width = 12,
+            col_3(
+              shiny::selectizeInput("year", label = "Year", choices = unique(upwork03::averages$year), selected = 2017)
+            ),
+            col_3(
+              shiny::selectizeInput("TMH", label = "TMH", choices = unique(highest_incidence$TMH), selected = "Tuberculosis")
+            ),
+            col_6(
+              uiOutput(("country"))
+            )
+          )
+        ),
+        fluidRow(
+            mod_viz02_ui("viz02", 7, 400),
+            mod_viz05_ui("viz05", 5, 400)
+        ),
+        fluidRow(
+          mod_viz03_ui("viz03", 6, 700),
+          mod_viz04_ui("viz04", 6, 700)
         )
-      ),
-      # Define tab content
-      material_tab_content(
-        tab_id = "first_tab",
-        tags$h1("First Tab Content")
-      ),
-      material_tab_content(
-        tab_id = "second_tab",
-        tags$h1("Second Tab Content")
       )
     )
   )
@@ -49,13 +56,15 @@ golem_add_external_resources <- function(){
   add_resource_path(
     'www', app_sys('app/www')
   )
- 
+  
   tags$head(
+    golem::activate_js(),
     favicon(),
     bundle_resources(
       path = app_sys('app/www'),
-      app_title = 'upwork03'
-    )
+      app_title = 'Poverty Viz'
+    ),
+    shinyjs::useShinyjs()
     # Add here other external resources
     # for example, you can add shinyalert::useShinyalert() 
   )

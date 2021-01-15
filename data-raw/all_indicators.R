@@ -49,17 +49,6 @@ usethis::use_data(highest_incidence, overwrite = TRUE)
 
 # incidence growth --------------------------------------------------------
 
-incidence_growth <- all_indicators %>% 
-  select(1:3, "Tuberculosis", "Malaria", "HIV") %>% 
-  group_by(year) %>% 
-  summarise(across(3:5, mean, na.rm = T)) %>% 
-  mutate(year = as.numeric(year),
-         Tuberculosis_1 = lag(Tuberculosis, order_by = year),
-         Malaria_1 = lag(Malaria, order_by = year),
-         HIV_1 = lag(HIV, order_by = year)) %>% 
-  mutate(Tuberculosis_gr = (Tuberculosis - Tuberculosis_1)/Tuberculosis_1,
-         Malaria_gr = (Malaria - Malaria_1)/Malaria_1,
-         HIV_gr = (HIV - HIV_1)/HIV_1) %>% 
-  select(year, contains("gr"))
+incidence_growth <- all_indicators
 
 usethis::use_data(incidence_growth, overwrite = TRUE)
